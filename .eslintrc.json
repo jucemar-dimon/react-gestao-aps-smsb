@@ -17,6 +17,9 @@
     "import/prefer-default-export": "off",
     "jsx-quotes": ["error", "prefer-single"],
     "react/prop-types": "off",
-    "no-unused-vars": "off"
+    "no-unused-vars": "off",
+    "no-use-before-define": ["warn", { "functions": false, "classes": false }],
+    "react/jsx-props-no-spreading": ["warn"],
+    "max-len": "off"
   }
 }
