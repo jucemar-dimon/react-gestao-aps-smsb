@@ -8,7 +8,6 @@ import {
 } from 'google-maps-react';
 import { kml } from '@tmcw/togeojson';
 import randomColor from 'randomcolor';
-import GeneralInfoWindow from '../GeneralInfoWindow';
 import { getCenterFromPolygon } from '../../utils';
 
 const MapContainer = (props) => {
@@ -34,7 +33,7 @@ const MapContainer = (props) => {
   }, []);
 
   useEffect(() => {
-    console.log('activeFeature', activeFeature);
+    // console.log('activeFeature', activeFeature);
   }, [activeFeature]);
 
   useEffect(() => {
@@ -135,7 +134,11 @@ const MapContainer = (props) => {
         lng: item[0],
         lat: item[1],
       }))}
-      {...microArea.style}
+      fillColor={microArea.style.fillColor}
+      strokeOpacity={microArea.style.strokeOpacity}
+      strokeWeight={microArea.style.strokeWeight}
+      strokeColor={microArea.style.strokeColor}
+      fillOpacity={microArea.style.fillOpacity}
       id={microArea.id}
     />
   ));
