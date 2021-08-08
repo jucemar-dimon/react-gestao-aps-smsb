@@ -166,6 +166,8 @@ const MapContainer = (props) => {
       google={google}
       initialCenter={centerMapCoordinates}
       zoom={15}
+      scaleControl={false}
+      fullscreenControl={false}
 
     >
       {ubs.length > 0 && renderMarkers()}

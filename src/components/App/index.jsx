@@ -1,7 +1,7 @@
 import React from 'react';
-import Header from './components/Header';
-import GoogleMap from './components/Map';
-import { GlobalStyle } from './styles/globalStyle';
+import Header from '../Header';
+import GoogleMap from '../Map';
+import { GlobalStyle } from '../../styles/globalStyle';
 import { Main, Container } from './styles';
 
 function App() {
