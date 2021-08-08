@@ -13,18 +13,23 @@ import { getCenterFromPolygon } from '../../utils';
 const MapContainer = (props) => {
   const { google } = props;
   const [kmlToJson, setKmlToJson] = useState([]);
-  const [ubs, setUbs] = useState([]);
-  const [microAreas, setMicroAreas] = useState([]);
+
   const [isShowInfoWindow, setIsShowInfoWindow] = useState(false);
   const [activeFeature, setActiveFeature] = useState({ ubs: false, mca: false, feature: null });
   const CNES = { r01: { cnes: '3387682' } };
+  const [microAreas, setMicroAreas] = useState([]);
+
+  const ubs = useMemo(() => {
+    const ubsTemp = kmlToJson.filter(
+      (feature) => feature.geometry.type === 'Point',
+    );
+    return ubsTemp;
+  }, [kmlToJson]);
 
   const centerMapCoordinates = { lat: -27.5136608, lng: -48.6434893 };
 
   useEffect(() => {
-    fetch(
-      'https://www.google.com/maps/d/u/0/kml?forcekml=1&mid=1TKLlG3A8R-BqIq7GdB5DxYZTU7V6fZwr',
-    )
+    fetch('mapa.kml')
       .then((response) => response.text())
       .then((xml) => kml(new DOMParser().parseFromString(xml, 'text/xml')))
       .then((json) => {
@@ -33,61 +38,46 @@ const MapContainer = (props) => {
   }, []);
 
   useEffect(() => {
-    // console.log('activeFeature', activeFeature);
-  }, [activeFeature]);
+    const microAreasTemp = kmlToJson.filter((feature) => feature.geometry.type === 'Polygon' && 'ACS' in feature.properties).map((microArea) => {
+      const color = randomColor();
+      return {
+        ...microArea,
+        style: {
+          fillColor: color,
+          strokeOpacity: 1,
+          strokeWeight: 1,
+          strokeColor: '#fff',
+          fillOpacity: 0.6,
+        },
+        id: microArea.properties.INE + microArea.properties.name,
+      };
+    });
+    setMicroAreas([...microAreasTemp]);
+  }, [kmlToJson]);
 
   useEffect(() => {
-    if (kmlToJson.length > 0) {
-      const ubsTemp = kmlToJson.filter(
-        (feature) => feature.geometry.type === 'Point',
-      );
-      setUbs(ubsTemp);
-
-      const microAreasTemp = kmlToJson.filter((feature) => feature.geometry.type === 'Polygon' && 'ACS' in feature.properties).map((microArea) => {
-        const color = randomColor();
-        return {
-          ...microArea,
-          style: {
-            fillColor: color,
-            strokeOpacity: 1,
-            strokeWeight: 1,
-            strokeColor: '#fff',
-            fillOpacity: 0.6,
-          },
-          id: microArea.properties.INE + microArea.properties.name,
-        };
-      });
-      setMicroAreas(microAreasTemp);
-    }
-  }, [kmlToJson]);
+    /*     console.log('process.env.REACT_APP_MAP_KML', process.env.REACT_APP_MAP_KML);
+    console.log('teste-activeFeature', activeFeature); */
+    // console.log('teste-ubs', ubs.length);
+    // console.log('teste-microAreas', microAreas.length);
+  }, [activeFeature]);
 
   const onInfoWindowClose = () => {
     setIsShowInfoWindow(false);
     setActiveFeature({ ubs: false, mca: false, feature: null });
   };
 
-  const onMapClicked = () => {
-    if (isShowInfoWindow) {
-      setIsShowInfoWindow(false);
-      setActiveFeature({ ubs: false, mca: false, feature: null });
-    }
-  };
-
-  const handleMarkerHover = (metadata, marker, e) => {
-    const m = ubs.find(
-      (currentMarker) => currentMarker.properties.CNES.trim() === marker.cnesUBS.trim(),
-    );
-
-    marker.setOptions({ animation: true });
+  const handleMarkerClick = (metadata, marker, e) => {
     setActiveFeature({ ubs: true, mca: false, feature: marker });
     setIsShowInfoWindow(true);
-    return false;
   };
 
-  const handleMarkerOut = (metadata, marker, e) => {
-    setIsShowInfoWindow(false);
-    setActiveFeature({ ubs: false, mca: false, feature: null });
-    return false;
+  const handlePolygonClick = (metadata, polygon, e) => {
+    const baseMicroarea = microAreas.find(
+      (currentMicroArea) => polygon.id === currentMicroArea.id,
+    );
+    setActiveFeature({ ubs: false, mca: true, feature: baseMicroarea });
+    setIsShowInfoWindow(true);
   };
 
   const handlePolygonOut = (metadata, polygon, e) => {
@@ -95,24 +85,17 @@ const MapContainer = (props) => {
       (currentMicroArea) => polygon.id === currentMicroArea.id,
     );
     polygon.setOptions(m.style);
-    setIsShowInfoWindow(false);
-    setActiveFeature({ ubs: false, mca: false, feature: null });
   };
 
   const handlePolygonHover = (metadata, polygon, e) => {
     polygon.setOptions({
       fillOpacity: 0.8, strokeWeight: 3,
     });
-    const micro = microAreas.find((microarea) => microarea.id === polygon.id);
-
-    setActiveFeature({ ubs: false, mca: true, feature: micro });
-    setIsShowInfoWindow(true);
   };
 
-  const renderMarkers = () => ubs.map((currentUbs) => (
+  const renderMarkers = useCallback(() => ubs.map((currentUbs) => (
     <Marker
-      onMouseout={handleMarkerOut}
-      onMouseover={handleMarkerHover}
+      onClick={handleMarkerClick}
       key={currentUbs.properties.CNES}
       id={currentUbs.properties.CNES}
       nomeUbs={currentUbs.properties.name}
@@ -122,10 +105,11 @@ const MapContainer = (props) => {
         lng: currentUbs.geometry.coordinates[0],
       }}
     />
-  ));
+  )), [ubs]);
 
-  const renderPolygon = () => microAreas.map((microArea) => (
+  const renderPolygon = useCallback(() => microAreas.map((microArea) => (
     <Polygon
+      onClick={handlePolygonClick}
       onMouseout={handlePolygonOut}
       nome={microArea.properties.name}
       onMouseover={handlePolygonHover}
@@ -141,34 +125,54 @@ const MapContainer = (props) => {
       fillOpacity={microArea.style.fillOpacity}
       id={microArea.id}
     />
-  ));
+  )), [microAreas]);
+
+  const renderInfoWindow = useCallback(() => {
+    if (activeFeature.ubs) {
+      return (
+        <InfoWindow
+          marker={activeFeature.feature}
+          visible={isShowInfoWindow}
+          onClose={onInfoWindowClose}
+        >
+          <>
+            <div>
+              <h2>{activeFeature.feature && activeFeature.feature.properties && activeFeature.feature.properties.name}</h2>
+              <h2>{activeFeature.feature && activeFeature.feature.nomeUbs}</h2>
+            </div>
+            <span>{activeFeature.feature && `CNES: ${activeFeature.feature.nomeUbs}`}</span>
+
+          </>
+        </InfoWindow>
+      );
+    }
+    return (
+      <InfoWindow
+        position={getCenterFromPolygon(activeFeature.feature.geometry.coordinates[0])}
+        visible={isShowInfoWindow}
+        onClose={onInfoWindowClose}
+      >
+        <div>
+          <strong>{activeFeature.feature && activeFeature.feature.properties && activeFeature.feature.properties.name}</strong>
+          <strong>{activeFeature.feature && activeFeature.feature.nomeUbs}</strong>
+        </div>
+      </InfoWindow>
+    );
+  }, [activeFeature]);
 
   return (
     <Map
-      onClick={onMapClicked}
       mapTypeControl={false}
       google={google}
       initialCenter={centerMapCoordinates}
       zoom={15}
-      style={{ height: '100%', position: 'relative', width: '100%' }}
+
     >
       {ubs.length > 0 && renderMarkers()}
 
       {microAreas.length > 0 && renderPolygon()}
 
-      {activeFeature.feature && (
-        <InfoWindow
-          marker={activeFeature.ubs && activeFeature.feature}
-          visible={isShowInfoWindow}
-          onClose={onInfoWindowClose}
-          position={activeFeature.mca && getCenterFromPolygon(activeFeature.feature.geometry.coordinates[0])}
-        >
-          <div>
-            <strong>{activeFeature.feature && activeFeature.feature.properties && activeFeature.feature.properties.name}</strong>
-            <strong>{activeFeature.feature && activeFeature.feature.nomeUbs}</strong>
-          </div>
-        </InfoWindow>
-      )}
+      {activeFeature.feature && renderInfoWindow()}
 
     </Map>
   );
