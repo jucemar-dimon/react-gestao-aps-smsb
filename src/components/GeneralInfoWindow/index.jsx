@@ -20,6 +20,7 @@ function GeneralInfoWindow(props) {
 
   return (
     <InfoWindow
+      // eslint-disable-next-line react/jsx-props-no-spreading
       {...handleConditionalProps()}
       visible={isShowInfoWindow}
       onClose={onInfoWindowClose}
