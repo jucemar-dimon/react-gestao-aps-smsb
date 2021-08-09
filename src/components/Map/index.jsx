@@ -8,7 +8,7 @@ import {
 } from 'google-maps-react';
 import { kml } from '@tmcw/togeojson';
 import randomColor from 'randomcolor';
-import { getCenterFromPolygon } from '../../utils';
+import GeneralInfoWindow from '../GeneralInfoWindow';
 
 const MapContainer = (props) => {
   const { google } = props;
@@ -127,38 +127,38 @@ const MapContainer = (props) => {
     />
   )), [microAreas]);
 
-  const renderInfoWindow = useCallback(() => {
-    if (activeFeature.ubs) {
-      return (
-        <InfoWindow
-          marker={activeFeature.feature}
-          visible={isShowInfoWindow}
-          onClose={onInfoWindowClose}
-        >
-          <>
-            <div>
-              <h2>{activeFeature.feature && activeFeature.feature.properties && activeFeature.feature.properties.name}</h2>
-              <h2>{activeFeature.feature && activeFeature.feature.nomeUbs}</h2>
-            </div>
-            <span>{activeFeature.feature && `CNES: ${activeFeature.feature.nomeUbs}`}</span>
+  // const renderInfoWindow = useCallback(() => {
+  //   if (activeFeature.ubs) {
+  //     return (
+  //       <InfoWindow
+  //         marker={activeFeature.feature}
+  //         visible={isShowInfoWindow}
+  //         onClose={onInfoWindowClose}
+  //       >
+  //         <>
+  //           <div>
+  //             <h2>{activeFeature.feature && activeFeature.feature.properties && activeFeature.feature.properties.name}</h2>
+  //             <h2>{activeFeature.feature && activeFeature.feature.nomeUbs}</h2>
+  //           </div>
+  //           <span>{activeFeature.feature && `CNES: ${activeFeature.feature.nomeUbs}`}</span>
 
-          </>
-        </InfoWindow>
-      );
-    }
-    return (
-      <InfoWindow
-        position={getCenterFromPolygon(activeFeature.feature.geometry.coordinates[0])}
-        visible={isShowInfoWindow}
-        onClose={onInfoWindowClose}
-      >
-        <div>
-          <strong>{activeFeature.feature && activeFeature.feature.properties && activeFeature.feature.properties.name}</strong>
-          <strong>{activeFeature.feature && activeFeature.feature.nomeUbs}</strong>
-        </div>
-      </InfoWindow>
-    );
-  }, [activeFeature]);
+  //         </>
+  //       </InfoWindow>
+  //     );
+  //   }
+  //   return (
+  //     <InfoWindow
+  //       position={getCenterFromPolygon(activeFeature.feature.geometry.coordinates[0])}
+  //       visible={isShowInfoWindow}
+  //       onClose={onInfoWindowClose}
+  //     >
+  //       <div>
+  //         <strong>{activeFeature.feature && activeFeature.feature.properties && activeFeature.feature.properties.name}</strong>
+  //         <strong>{activeFeature.feature && activeFeature.feature.nomeUbs}</strong>
+  //       </div>
+  //     </InfoWindow>
+  //   );
+  // }, [activeFeature]);
 
   return (
     <Map
@@ -174,7 +174,9 @@ const MapContainer = (props) => {
 
       {microAreas.length > 0 && renderPolygon()}
 
-      {activeFeature.feature && renderInfoWindow()}
+      {activeFeature && activeFeature.feature && (
+        <GeneralInfoWindow ubs={activeFeature.ubs} mca={activeFeature.mca} feature={activeFeature.feature} isShowInfoWindow={isShowInfoWindow} />
+      )}
 
     </Map>
   );
