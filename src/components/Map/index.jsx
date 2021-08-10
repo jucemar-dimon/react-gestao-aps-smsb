@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React, {
   memo,
   useCallback,
@@ -11,7 +12,7 @@ import randomColor from 'randomcolor';
 import GeneralInfoWindow from '../GeneralInfoWindow';
 
 const MapContainer = (props) => {
-  const { google } = props;
+  const { google, map, mapCenter } = props;
   const [kmlToJson, setKmlToJson] = useState([]);
 
   const [isShowInfoWindow, setIsShowInfoWindow] = useState(false);
@@ -22,7 +23,12 @@ const MapContainer = (props) => {
   const ubs = useMemo(() => {
     const ubsTemp = kmlToJson.filter(
       (feature) => feature.geometry.type === 'Point',
-    );
+    ).map((point) => ({
+      position: { lat: point.geometry.coordinates[1], lng: point.geometry.coordinates[0] },
+      cnes: point.properties.CNES,
+      nomeEstabelecimento: point.properties.name,
+    }));
+    console.log('ubsTemp', ubsTemp);
     return ubsTemp;
   }, [kmlToJson]);
 
@@ -40,8 +46,9 @@ const MapContainer = (props) => {
   useEffect(() => {
     const microAreasTemp = kmlToJson.filter((feature) => feature.geometry.type === 'Polygon' && 'ACS' in feature.properties).map((microArea) => {
       const color = randomColor();
+      const codigoMicroarea = microArea.properties.name.slice(-2, microArea.properties.name.length);
       return {
-        ...microArea,
+
         style: {
           fillColor: color,
           strokeOpacity: 1,
@@ -49,10 +56,23 @@ const MapContainer = (props) => {
           strokeColor: '#fff',
           fillOpacity: 0.6,
         },
-        id: microArea.properties.INE + microArea.properties.name,
+        id: `${microArea.properties.CNES}-${microArea.properties.INE}-${microArea.properties.Área}-${codigoMicroarea}`,
+        microarea: codigoMicroarea,
+        cnes: microArea.properties.CNES,
+        area: microArea.properties.Área,
+        acs: microArea.properties.ACS,
+        ine: microArea.properties.INE,
+        nomeEquipe: microArea.properties['Nome da equipe'],
+        nomeEstabelecimento: microArea.properties.Estabelecimento,
+        paths: microArea.geometry.coordinates[0].map((item) => ({
+          lng: item[0],
+          lat: item[1],
+        })),
+
       };
     });
     setMicroAreas([...microAreasTemp]);
+    console.log('microAreas', microAreasTemp);
   }, [kmlToJson]);
 
   useEffect(() => {
@@ -96,14 +116,11 @@ const MapContainer = (props) => {
   const renderMarkers = useCallback(() => ubs.map((currentUbs) => (
     <Marker
       onClick={handleMarkerClick}
-      key={currentUbs.properties.CNES}
-      id={currentUbs.properties.CNES}
-      nomeUbs={currentUbs.properties.name}
-      cnesUBS={currentUbs.properties.CNES.trim()}
-      position={{
-        lat: currentUbs.geometry.coordinates[1],
-        lng: currentUbs.geometry.coordinates[0],
-      }}
+      key={currentUbs.cnes}
+      id={currentUbs.cnes}
+      cnes={currentUbs.cnes}
+      position={currentUbs.position}
+      nomeEstabelecimento={currentUbs.nomeEstabelecimento}
     />
   )), [ubs]);
 
@@ -111,13 +128,10 @@ const MapContainer = (props) => {
     <Polygon
       onClick={handlePolygonClick}
       onMouseout={handlePolygonOut}
-      nome={microArea.properties.name}
+      nomeEstabelecimento={microArea.nomeEstabelecimento}
       onMouseover={handlePolygonHover}
       key={microArea.id}
-      paths={microArea.geometry.coordinates[0].map((item) => ({
-        lng: item[0],
-        lat: item[1],
-      }))}
+      paths={microArea.paths}
       fillColor={microArea.style.fillColor}
       strokeOpacity={microArea.style.strokeOpacity}
       strokeWeight={microArea.style.strokeWeight}
@@ -127,39 +141,6 @@ const MapContainer = (props) => {
     />
   )), [microAreas]);
 
-  // const renderInfoWindow = useCallback(() => {
-  //   if (activeFeature.ubs) {
-  //     return (
-  //       <InfoWindow
-  //         marker={activeFeature.feature}
-  //         visible={isShowInfoWindow}
-  //         onClose={onInfoWindowClose}
-  //       >
-  //         <>
-  //           <div>
-  //             <h2>{activeFeature.feature && activeFeature.feature.properties && activeFeature.feature.properties.name}</h2>
-  //             <h2>{activeFeature.feature && activeFeature.feature.nomeUbs}</h2>
-  //           </div>
-  //           <span>{activeFeature.feature && `CNES: ${activeFeature.feature.nomeUbs}`}</span>
-
-  //         </>
-  //       </InfoWindow>
-  //     );
-  //   }
-  //   return (
-  //     <InfoWindow
-  //       position={getCenterFromPolygon(activeFeature.feature.geometry.coordinates[0])}
-  //       visible={isShowInfoWindow}
-  //       onClose={onInfoWindowClose}
-  //     >
-  //       <div>
-  //         <strong>{activeFeature.feature && activeFeature.feature.properties && activeFeature.feature.properties.name}</strong>
-  //         <strong>{activeFeature.feature && activeFeature.feature.nomeUbs}</strong>
-  //       </div>
-  //     </InfoWindow>
-  //   );
-  // }, [activeFeature]);
-
   return (
     <Map
       mapTypeControl={false}
@@ -168,15 +149,12 @@ const MapContainer = (props) => {
       zoom={15}
       scaleControl={false}
       fullscreenControl={false}
-
     >
       {ubs.length > 0 && renderMarkers()}
 
       {microAreas.length > 0 && renderPolygon()}
 
-      {activeFeature && activeFeature.feature && (
-        <GeneralInfoWindow ubs={activeFeature.ubs} mca={activeFeature.mca} feature={activeFeature.feature} isShowInfoWindow={isShowInfoWindow} />
-      )}
+      <GeneralInfoWindow map={map} google={google} mapCenter={mapCenter} ubs={activeFeature.ubs} mca={activeFeature.mca} feature={activeFeature.feature} isShowInfoWindow={isShowInfoWindow} />
 
     </Map>
   );

@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React, { useMemo } from 'react';
 import { InfoWindow } from 'google-maps-react';
 import { getCenterFromPolygon } from '../../utils';
@@ -6,7 +7,7 @@ import { getCenterFromPolygon } from '../../utils';
 
 function GeneralInfoWindow(props) {
   const {
-    ubs, mca, feature, isShowInfoWindow, onInfoWindowClose,
+    ubs, mca, feature, isShowInfoWindow, onInfoWindowClose, map, google, mapCenter,
   } = props;
 
   const handleConditionalProps = () => {
@@ -14,23 +15,27 @@ function GeneralInfoWindow(props) {
     if (ubs) {
       conditionPropsObject.marker = feature;
     } else if (mca) {
-      conditionPropsObject.position = getCenterFromPolygon(feature.geometry.coordinates[0]);
+      conditionPropsObject.position = getCenterFromPolygon(feature.paths);
     }
+    return conditionPropsObject;
   };
+  console.log('GeneralInfoWindow-props', feature);
 
   return (
     <InfoWindow
-      // eslint-disable-next-line react/jsx-props-no-spreading
       {...handleConditionalProps()}
       visible={isShowInfoWindow}
       onClose={onInfoWindowClose}
+      map={map}
+      google={google}
+      mapCenter={mapCenter}
     >
       <>
         <div>
-          <h2>{feature && feature.properties && feature.properties.name}</h2>
-          <h2>{feature && feature.nomeUbs}</h2>
+          <h2>{feature && feature.nomeEstabelecimento}</h2>
+
         </div>
-        <span>{feature && `CNES: ${feature.properties}`}</span>
+        <span>{feature && `CNES: ${feature.cnes}`}</span>
       </>
     </InfoWindow>
   );

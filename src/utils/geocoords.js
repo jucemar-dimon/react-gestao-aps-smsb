@@ -4,9 +4,9 @@ function getCenterFromPolygon(data) {
   let Y = 0.0;
   let Z = 0.0;
 
-  for (let i = 0; i < numCoords; i += 1) {
-    const lat = (data[i][0] * Math.PI) / 180;
-    const lon = (data[i][1] * Math.PI) / 180;
+  data.forEach((element) => {
+    const lat = (element.lng * Math.PI) / 180;
+    const lon = (element.lat * Math.PI) / 180;
     const a = Math.cos(lat) * Math.cos(lon);
     const b = Math.cos(lat) * Math.sin(lon);
     const c = Math.sin(lat);
@@ -14,7 +14,7 @@ function getCenterFromPolygon(data) {
     X += a;
     Y += b;
     Z += c;
-  }
+  });
 
   X /= numCoords;
   Y /= numCoords;
