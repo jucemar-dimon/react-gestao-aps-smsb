@@ -1,9 +1,11 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { useMemo } from 'react';
 import { InfoWindow } from 'google-maps-react';
+
+import { FcHome, FcRadarPlot } from 'react-icons/fc';
 import { getCenterFromPolygon } from '../../utils';
 
-// import { Container } from './styles';
+import { Container } from './styles';
 
 function GeneralInfoWindow(props) {
   const {
@@ -30,13 +32,18 @@ function GeneralInfoWindow(props) {
       google={google}
       mapCenter={mapCenter}
     >
-      <>
-        <div>
-          <h2>{feature && feature.nomeEstabelecimento}</h2>
+      <Container>
 
+        <div className='title'>
+          {ubs && <FcHome style={{ fontSize: '1rem', marginRight: 5 }} />}
+          {mca && <FcRadarPlot style={{ fontSize: '1rem', marginRight: 5 }} />}
+          <h2>{mca && `MICROÁREA ${feature.microarea}`}</h2>
+          <h2>{ubs && feature.nomeEstabelecimento}</h2>
         </div>
-        <span>{feature && `CNES: ${feature.cnes}`}</span>
-      </>
+
+        <p>{mca && `ÀREA ${feature.area} - ${feature.nomeEquipe}`}</p>
+        <p>{mca && `${feature.nomeEstabelecimento}`}</p>
+      </Container>
     </InfoWindow>
   );
 }

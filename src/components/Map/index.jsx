@@ -9,7 +9,9 @@ import {
 } from 'google-maps-react';
 import { kml } from '@tmcw/togeojson';
 import randomColor from 'randomcolor';
+import { FcHome } from 'react-icons/fc';
 import GeneralInfoWindow from '../GeneralInfoWindow';
+import ubsIcon from '../../assets/images/ubs.png';
 
 const MapContainer = (props) => {
   const { google, map, mapCenter } = props;
@@ -115,6 +117,7 @@ const MapContainer = (props) => {
 
   const renderMarkers = useCallback(() => ubs.map((currentUbs) => (
     <Marker
+      icon={ubsIcon}
       onClick={handleMarkerClick}
       key={currentUbs.cnes}
       id={currentUbs.cnes}
