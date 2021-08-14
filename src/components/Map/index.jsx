@@ -30,7 +30,7 @@ const MapContainer = (props) => {
       cnes: point.properties.CNES,
       nomeEstabelecimento: point.properties.name,
     }));
-    console.log('ubsTemp', ubsTemp);
+    // console.log('ubsTemp', ubsTemp);
     return ubsTemp;
   }, [kmlToJson]);
 
@@ -74,7 +74,7 @@ const MapContainer = (props) => {
       };
     });
     setMicroAreas([...microAreasTemp]);
-    console.log('microAreas', microAreasTemp);
+    // console.log('microAreas', microAreasTemp);
   }, [kmlToJson]);
 
   useEffect(() => {

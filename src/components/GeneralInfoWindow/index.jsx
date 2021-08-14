@@ -21,7 +21,7 @@ function GeneralInfoWindow(props) {
     }
     return conditionPropsObject;
   };
-  console.log('GeneralInfoWindow-props', feature);
+  // console.log('GeneralInfoWindow-props', feature);
 
   return (
     <InfoWindow

@@ -12,24 +12,22 @@ export const Container = styled.header`
   align-items: center;
   padding: 10px;
   width: 100%;
-
 `;
 
 export const Logo = styled.img`
   height: 4rem;
-  margin:0 10px 0 0;
+  margin: 0 10px 0 0;
 `;
 export const Title = styled.h1`
   font-size: 1.1rem;
-
 `;
 
 export const TitleArea = styled.div`
-line-height: 1.5rem;
+  line-height: 1.5rem;
 `;
 
 export const Subtitle = styled.p`
   font-size: 0.9rem;
-  font-weight:  ${(props) => (props.bold ? 700 : 400)};
-  font-style:   ${(props) => (props.italic ? 'italic' : 'normal')};
+  font-weight: ${(props) => (props.bold ? 700 : 400)};
+  font-style: ${(props) => (props.italic ? 'italic' : 'normal')};
 `;
