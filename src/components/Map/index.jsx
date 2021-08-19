@@ -12,6 +12,7 @@ import randomColor from 'randomcolor';
 import { FcHome } from 'react-icons/fc';
 import GeneralInfoWindow from '../GeneralInfoWindow';
 import ubsIcon from '../../assets/images/ubs.png';
+import { colors, cnes } from '../../utils';
 
 const MapContainer = (props) => {
   const { google, map, mapCenter } = props;
@@ -19,7 +20,7 @@ const MapContainer = (props) => {
 
   const [isShowInfoWindow, setIsShowInfoWindow] = useState(false);
   const [activeFeature, setActiveFeature] = useState({ ubs: false, mca: false, feature: null });
-  const CNES = { r01: { cnes: '3387682' } };
+
   const [microAreas, setMicroAreas] = useState([]);
 
   const ubs = useMemo(() => {
@@ -46,18 +47,11 @@ const MapContainer = (props) => {
   }, []);
 
   useEffect(() => {
-    const microAreasTemp = kmlToJson.filter((feature) => feature.geometry.type === 'Polygon' && 'ACS' in feature.properties).map((microArea) => {
+    const microAreasNude = kmlToJson.filter((feature) => feature.geometry.type === 'Polygon' && 'ACS' in feature.properties).map((microArea) => {
       const color = randomColor();
       const codigoMicroarea = microArea.properties.name.slice(-2, microArea.properties.name.length);
       return {
 
-        style: {
-          fillColor: color,
-          strokeOpacity: 1,
-          strokeWeight: 1,
-          strokeColor: '#fff',
-          fillOpacity: 0.6,
-        },
         id: `${microArea.properties.CNES}-${microArea.properties.INE}-${microArea.properties.Área}-${codigoMicroarea}`,
         microarea: codigoMicroarea,
         cnes: microArea.properties.CNES,
@@ -73,8 +67,36 @@ const MapContainer = (props) => {
 
       };
     });
-    setMicroAreas([...microAreasTemp]);
-    // console.log('microAreas', microAreasTemp);
+    // eslint-disable-next-line prefer-const
+    let areas = {};
+    const microAreasColorized = [];
+    microAreasNude.forEach((item) => {
+      if (areas[item.cnes]) {
+        areas[item.cnes].push(item);
+      } else {
+        areas[item.cnes] = [item];
+      }
+    });
+    const keys = Object.keys(areas);
+    const colorizedAreas = {};
+    keys.forEach((key) => {
+      areas[key].forEach(async (nudeMicroArea, index) => {
+        const colorsOfMicroArea = colors && colors[key] && colors[key][index] ? colors[key][index] : '#fff';
+        microAreasColorized.push({
+          ...nudeMicroArea,
+          style: {
+            fillColor: colorsOfMicroArea,
+            strokeOpacity: 1,
+            strokeWeight: 1,
+            strokeColor: '#fff',
+            fillOpacity: 0.5,
+          },
+        });
+      });
+    });
+
+    setMicroAreas([...microAreasColorized]);
+    // console.log('colorizedAreas', colorizedAreas);
   }, [kmlToJson]);
 
   useEffect(() => {
@@ -111,7 +133,7 @@ const MapContainer = (props) => {
 
   const handlePolygonHover = (metadata, polygon, e) => {
     polygon.setOptions({
-      fillOpacity: 0.8, strokeWeight: 3,
+      fillOpacity: 0.7, strokeWeight: 2,
     });
   };
 
