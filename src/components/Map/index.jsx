@@ -48,10 +48,8 @@ const MapContainer = (props) => {
 
   useEffect(() => {
     const microAreasNude = kmlToJson.filter((feature) => feature.geometry.type === 'Polygon' && 'ACS' in feature.properties).map((microArea) => {
-      const color = randomColor();
       const codigoMicroarea = microArea.properties.name.slice(-2, microArea.properties.name.length);
       return {
-
         id: `${microArea.properties.CNES}-${microArea.properties.INE}-${microArea.properties.Área}-${codigoMicroarea}`,
         microarea: codigoMicroarea,
         cnes: microArea.properties.CNES,
@@ -64,7 +62,6 @@ const MapContainer = (props) => {
           lng: item[0],
           lat: item[1],
         })),
-
       };
     });
     // eslint-disable-next-line prefer-const
@@ -77,11 +74,15 @@ const MapContainer = (props) => {
         areas[item.cnes] = [item];
       }
     });
+    // console.log('areas', areas);
     const keys = Object.keys(areas);
+    // console.log('keys', keys);
     const colorizedAreas = {};
     keys.forEach((key) => {
-      areas[key].forEach(async (nudeMicroArea, index) => {
-        const colorsOfMicroArea = colors && colors[key] && colors[key][index] ? colors[key][index] : '#fff';
+      const colorsForCurrentMicroarea = colors[key];
+
+      areas[key].forEach((nudeMicroArea, index) => {
+        const colorsOfMicroArea = colorsForCurrentMicroarea;
         microAreasColorized.push({
           ...nudeMicroArea,
           style: {
