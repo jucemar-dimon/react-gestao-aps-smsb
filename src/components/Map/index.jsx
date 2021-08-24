@@ -11,8 +11,10 @@ import { kml } from '@tmcw/togeojson';
 import randomColor from 'randomcolor';
 import { FcHome } from 'react-icons/fc';
 import GeneralInfoWindow from '../GeneralInfoWindow';
+import Modal from '../Modal';
 import ubsIcon from '../../assets/images/ubs.png';
 import { colors, cnes } from '../../utils';
+import { MapStyled } from './styles';
 
 const MapContainer = (props) => {
   const { google, map, mapCenter } = props;
@@ -90,7 +92,7 @@ const MapContainer = (props) => {
             strokeOpacity: 1,
             strokeWeight: 1,
             strokeColor: '#fff',
-            fillOpacity: 0.5,
+            fillOpacity: 1,
           },
         });
       });
@@ -134,7 +136,7 @@ const MapContainer = (props) => {
 
   const handlePolygonHover = (metadata, polygon, e) => {
     polygon.setOptions({
-      fillOpacity: 0.7, strokeWeight: 2,
+      fillOpacity: 0.5, strokeColor: '#fff',
     });
   };
 
@@ -168,21 +170,25 @@ const MapContainer = (props) => {
   )), [microAreas]);
 
   return (
-    <Map
-      mapTypeControl={false}
-      google={google}
-      initialCenter={centerMapCoordinates}
-      zoom={15}
-      scaleControl={false}
-      fullscreenControl={false}
-    >
-      {ubs.length > 0 && renderMarkers()}
+    <div style={{ position: 'relative' }}>
+      <MapStyled
+        className='map'
+        mapTypeControl={false}
+        google={google}
+        initialCenter={centerMapCoordinates}
+        zoom={11}
+        scaleControl={false}
+        fullscreenControl={false}
+      >
+        {ubs.length > 0 && renderMarkers()}
 
-      {microAreas.length > 0 && renderPolygon()}
+        {microAreas.length > 0 && renderPolygon()}
 
-      <GeneralInfoWindow map={map} google={google} mapCenter={mapCenter} ubs={activeFeature.ubs} mca={activeFeature.mca} feature={activeFeature.feature} isShowInfoWindow={isShowInfoWindow} />
+        <GeneralInfoWindow map={map} google={google} mapCenter={mapCenter} ubs={activeFeature.ubs} mca={activeFeature.mca} feature={activeFeature.feature} isShowInfoWindow={isShowInfoWindow} />
 
-    </Map>
+      </MapStyled>
+      <Modal />
+    </div>
   );
 };
 
