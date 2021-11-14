@@ -4,7 +4,14 @@ export const Container = styled.footer`
   width: 100%;
   height: 4rem;
   display: flex;
-  justify-content: center;
+  flex-direction: row;
+  justify-content: space-between;
   align-items: center;
-  background-color: #ceac67;
+  background-color: var(--gold);
+  padding: 1rem;
+
+  .version{
+
+
+  }
 `;

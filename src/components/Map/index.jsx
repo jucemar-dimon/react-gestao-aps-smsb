@@ -24,6 +24,7 @@ const MapContainer = (props) => {
   const [activeFeature, setActiveFeature] = useState({ ubs: false, mca: false, feature: null });
 
   const [microAreas, setMicroAreas] = useState([]);
+  const [isShowModal, setIsShowModal] = useState(false);
 
   const ubs = useMemo(() => {
     const ubsTemp = kmlToJson.filter(
@@ -142,7 +143,6 @@ const MapContainer = (props) => {
 
   const renderMarkers = useCallback(() => ubs.map((currentUbs) => (
     <Marker
-      icon={ubsIcon}
       onClick={handleMarkerClick}
       key={currentUbs.cnes}
       id={currentUbs.cnes}
@@ -169,8 +169,15 @@ const MapContainer = (props) => {
     />
   )), [microAreas]);
 
+  const handleCloseModal = () => {
+    setIsShowModal(false);
+  };
+  const handleOpenModal = () => {
+    setIsShowModal(true);
+  };
+
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={{ position: 'relative', overflow: 'hidden' }}>
       <MapStyled
         className='map'
         mapTypeControl={false}
@@ -184,10 +191,10 @@ const MapContainer = (props) => {
 
         {microAreas.length > 0 && renderPolygon()}
 
-        <GeneralInfoWindow map={map} google={google} mapCenter={mapCenter} ubs={activeFeature.ubs} mca={activeFeature.mca} feature={activeFeature.feature} isShowInfoWindow={isShowInfoWindow} />
+        <GeneralInfoWindow handleShowMore={handleOpenModal} map={map} google={google} mapCenter={mapCenter} ubs={activeFeature.ubs} mca={activeFeature.mca} feature={activeFeature.feature} isShowInfoWindow={isShowInfoWindow} />
 
       </MapStyled>
-      <Modal />
+      <Modal isOpen={isShowModal} data={activeFeature} handleCloseModal={handleCloseModal} />
     </div>
   );
 };

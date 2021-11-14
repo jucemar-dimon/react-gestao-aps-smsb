@@ -9,7 +9,7 @@ import { Container } from './styles';
 
 function GeneralInfoWindow(props) {
   const {
-    ubs, mca, feature, isShowInfoWindow, onInfoWindowClose, map, google, mapCenter,
+    ubs, mca, feature, isShowInfoWindow, onInfoWindowClose, map, google, mapCenter, handleShowMore,
   } = props;
 
   const handleConditionalProps = () => {
@@ -23,6 +23,9 @@ function GeneralInfoWindow(props) {
   };
   // console.log('GeneralInfoWindow-props', feature);
 
+  const showMore = () => {
+    handleShowMore();
+  };
   return (
     <InfoWindow
       {...handleConditionalProps()}
@@ -43,6 +46,7 @@ function GeneralInfoWindow(props) {
 
         <p>{mca && `ÀREA ${feature.area} - ${feature.nomeEquipe}`}</p>
         <p>{mca && `${feature.nomeEstabelecimento}`}</p>
+        {/* <button type='button' onClick={showMore()}>DETALHES</button> */}
       </Container>
     </InfoWindow>
   );
